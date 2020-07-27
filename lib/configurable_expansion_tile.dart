@@ -14,27 +14,27 @@ class ConfigurableExpansionTile extends StatefulWidget {
   /// expanded state by proving a [Widget] in [headerExpanded]. Colors can also
   /// be specified for the animated transitions/states. [children] are revealed
   /// when the expansion tile is expanded.
-  const ConfigurableExpansionTile(
-      {Key key,
-      this.headerBackgroundColorStart = Colors.transparent,
-      this.onExpansionChanged,
-      this.children = const <Widget>[],
-      this.initiallyExpanded = false,
-      @required this.header,
-      this.animatedWidgetFollowingHeader,
-      this.animatedWidgetPrecedingHeader,
-      this.expandedBackgroundColor,
-      this.borderColorStart = Colors.transparent,
-      this.borderColorEnd = Colors.transparent,
-      this.topBorderOn = true,
-      this.bottomBorderOn = true,
-      this.kExpand = const Duration(milliseconds: 200),
-      this.headerBackgroundColorEnd,
-      this.headerExpanded,
-      this.headerAnimationTween,
-      this.borderAnimationTween,
-      this.animatedWidgetTurnTween,
-      this.animatedWidgetTween})
+  const ConfigurableExpansionTile({Key key,
+    this.headerBackgroundColorStart = Colors.transparent,
+    this.onExpansionChanged,
+    this.children = const <Widget>[],
+    this.initiallyExpanded = false,
+    @required this.header,
+    this.animatedWidgetFollowingHeader,
+    this.hasComment,
+    this.animatedWidgetPrecedingHeader,
+    this.expandedBackgroundColor,
+    this.borderColorStart = Colors.transparent,
+    this.borderColorEnd = Colors.transparent,
+    this.topBorderOn = true,
+    this.bottomBorderOn = true,
+    this.kExpand = const Duration(milliseconds: 200),
+    this.headerBackgroundColorEnd,
+    this.headerExpanded,
+    this.headerAnimationTween,
+    this.borderAnimationTween,
+    this.animatedWidgetTurnTween,
+    this.animatedWidgetTween})
       : assert(initiallyExpanded != null),
         super(key: key);
 
@@ -72,6 +72,7 @@ class ConfigurableExpansionTile extends StatefulWidget {
 
   /// A widget to rotate following the [header] (ie an arrow)
   final Widget animatedWidgetFollowingHeader;
+  final bool hasComment;
 
   /// A widget to rotate preceding the [header] (ie an arrow)
   final Widget animatedWidgetPrecedingHeader;
@@ -104,12 +105,13 @@ class ConfigurableExpansionTile extends StatefulWidget {
   final Animatable<double> animatedWidgetTween;
 
   static final Animatable<double> _easeInTween =
-      CurveTween(curve: Curves.easeIn);
+  CurveTween(curve: Curves.easeIn);
   static final Animatable<double> _halfTween =
-      Tween<double>(begin: 0.0, end: 0.5);
+  Tween<double>(begin: 0.0, end: 0.5);
 
   static final Animatable<double> _easeOutTween =
-      CurveTween(curve: Curves.easeOut);
+  CurveTween(curve: Curves.easeOut);
+
   @override
   _ConfigurableExpansionTileState createState() =>
       _ConfigurableExpansionTileState();
@@ -137,7 +139,7 @@ class _ConfigurableExpansionTileState extends State<ConfigurableExpansionTile>
     _iconTurns = _controller.drive(
         (widget.animatedWidgetTurnTween ?? ConfigurableExpansionTile._halfTween)
             .chain(widget.animatedWidgetTween ??
-                ConfigurableExpansionTile._easeInTween));
+            ConfigurableExpansionTile._easeInTween));
 
     _borderColor = _controller.drive(_borderColorTween.chain(
         widget.borderAnimationTween ??
@@ -185,34 +187,38 @@ class _ConfigurableExpansionTileState extends State<ConfigurableExpansionTile>
     return Container(
       decoration: BoxDecoration(
           border: Border(
-        top: BorderSide(
-            color: widget.topBorderOn ? borderSideColor : Colors.transparent),
-        bottom: BorderSide(
-            color:
+            top: BorderSide(
+                color: widget.topBorderOn ? borderSideColor : Colors
+                    .transparent),
+            bottom: BorderSide(
+                color:
                 widget.bottomBorderOn ? borderSideColor : Colors.transparent),
-      )),
+          )),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           GestureDetector(
-              onTap: _handleTap,
+              onTap:  widget.hasComment ? _handleTap:null,
               child: Container(
                   color: headerColor,
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      RotationTransition(
-                        turns: _iconTurns,
-                        child:
-                            widget.animatedWidgetPrecedingHeader ?? Container(),
+//                      RotationTransition(
+//                        turns: _iconTurns,
+//                        child:
+//                            widget.animatedWidgetPrecedingHeader ?? Container(),
+//                      ),
+
+                      Expanded(
+                        child: _getHeader(),
                       ),
-                      _getHeader(),
-                      RotationTransition(
+                      widget.hasComment ? RotationTransition(
                         turns: _iconTurns,
                         child:
-                            widget.animatedWidgetFollowingHeader ?? Container(),
-                      )
+                        widget.animatedWidgetFollowingHeader ?? Container(),
+                      ) : widget.animatedWidgetFollowingHeader,
                     ],
                   ))),
           ClipRect(
@@ -244,8 +250,8 @@ class _ConfigurableExpansionTileState extends State<ConfigurableExpansionTile>
       child: closed
           ? null
           : Container(
-              color: widget.expandedBackgroundColor ?? Colors.transparent,
-              child: Column(children: widget.children)),
+          color: widget.expandedBackgroundColor ?? Colors.transparent,
+          child: Column(children: widget.children)),
     );
   }
 }
